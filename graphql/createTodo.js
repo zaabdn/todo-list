@@ -1,11 +1,10 @@
 import gql from "graphql-tag";
 
 const CREATE_TODO = gql`
-  mutation createTodo($title: String, $status: String) {
-    login(input: { title: $title, status: $status }) {
+  mutation create($title: String, $completed: Boolean = false) {
+    createTodo(input: { title: $title, completed: $completed }) {
       title
-      status
-      }
+      completed
     }
   }
 `;

@@ -60,7 +60,6 @@ export default function SignUp() {
   const [register, { data }] = useMutation(SIGNUP, {
     onCompleted: (res) => {
       Cookies.set("token", res.register.token);
-      localStorage.setItem("token", res.login.token);
       localStorage.setItem("email", res.register.user.email);
       router.replace("/");
     },

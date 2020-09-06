@@ -5,7 +5,7 @@ const GET_TODO = gql`
     todos {
       id
       title
-      status
+      completed
     }
   }
 `;

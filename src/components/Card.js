@@ -1,28 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { withStyles } from "@material-ui/core/styles";
 import {
-  InputBase,
   Container,
-  FormControlLabel,
   Checkbox,
   Grid,
   Typography,
+  InputAdornment,
+  IconButton,
 } from "@material-ui/core/";
 import DeleteIcon from "@material-ui/icons/Delete";
-import Icon from "@material-ui/core/Icon";
+import AddCircleRounded from "@material-ui/icons/AddCircleRounded";
 import GET_TODO from "../../graphql/todo";
 import { useQuery } from "@apollo/client";
-
-const GreenCheckbox = withStyles({
-  root: {
-    color: "grey",
-    "&$checked": {
-      color: "green",
-    },
-  },
-  checked: {},
-})((props) => <Checkbox color="default" {...props} />);
+import CREATE_TODO from "../../graphql/createTodo";
+import UPDATE_TODO from "../../graphql/updateTodo";
+import DELETE_TODO from "../../graphql/deleteTodo";
+import { useMutation, gql } from "@apollo/client";
+import Cookies from "js-cookie";
+import { useRouter } from "next/router";
+import CircleCheckedFilled from "@material-ui/icons/CheckCircle";
+import CircleUnchecked from "@material-ui/icons/RadioButtonUnchecked";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,45 +35,63 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     border: 0,
     backgroundColor: "#ededed",
-    padding: "8px 10px",
+    padding: "14px 0 14px 10px",
     borderRadius: "5px",
-    width: "550px",
+    width: "100%",
   },
   delete: {
     marginTop: "10px",
     color: "#d93232",
     float: "right",
+    cursor: "pointer",
   },
   Typography: {
     fontWeight: "bold",
   },
-  FormControlLabel: {
-    borderRadius: "50%",
-    width: "1000px",
-  },
 }));
 
-export default function Card() {
-  const [state, setState] = useState({
-    checkedA: true,
-    checkedB: true,
-    checkedF: true,
-    checkedG: false,
+export default function Card(props) {
+  let input;
+  const router = useRouter();
+  const [todos, setTodo] = useState({
+    title: "",
+    completed: false,
   });
 
-  const { loading, error, data } = useQuery(GET_TODO);
+  const { loading, error, data, refetch } = useQuery(GET_TODO);
 
   const handleChange = (event) => {
-    setState({ ...state, [event.target.name]: event.target.checked });
+    setTodo({ ...todos, [event.target.name]: event.target.checked });
   };
+
+  const [createTodo] = useMutation(CREATE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
+
+  const [updateTodo] = useMutation(UPDATE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
+
+  const [deleteTodo] = useMutation(DELETE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
 
   const classes = useStyles();
   return (
-    <Container maxWidth="sm" style={{ marginTop: "50px" }}>
+    <Container
+      maxWidth="sm"
+      style={{ marginTop: "50px", paddingBottom: "100px" }}
+    >
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <img
-            src="https://next-todo-jecqt.art.mejik.id/images/art.svg"
+            src="https://media-exp1.licdn.com/dms/image/C4D0BAQGrzneL3Dpmxw/company-logo_200_200/0?e=2159024400&v=beta&t=145tUYuZya2-FCl7P369j8wX6QAhnLt-gzSOuHVizvg"
             alt="logo"
             width="150px"
             height="150px"
@@ -92,22 +108,78 @@ export default function Card() {
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <InputBase className={classes.input} placeholder="Add a Task" />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              createTodo({ variables: { title: input.value } });
+              input.value = "";
+            }}
+          >
+            <input
+              // startAdornment={
+              //   <InputAdornment>
+              //     <IconButton>
+              //       <AddCircleRounded />{" "}
+              //     </IconButton>
+              //   </InputAdornment>
+              // }
+              type="text"
+              className={classes.input}
+              placeholder="Add a Task"
+              onChange={(e) => setTodo(e.target.value)}
+              name="title"
+              ref={(node) => {
+                input = node;
+              }}
+            />
+          </form>
         </Grid>
         {data &&
           data.todos.map((todo) => (
             <Grid key={todo.id} item xs={12}>
-              <FormControlLabel
-                control={
-                  <GreenCheckbox
-                    onChange={handleChange}
-                    name={todo.id}
-                    id={todo.id}
-                  />
-                }
-              />
+              {todo.completed == true ? (
+                <Checkbox
+                  onChange={handleChange}
+                  name="completed"
+                  id={todo.id}
+                  checked
+                  icon={<CircleUnchecked />}
+                  checkedIcon={
+                    <CircleCheckedFilled style={{ color: "green" }} />
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    updateTodo({
+                      variables: { id: todo.id, completed: false },
+                    });
+                  }}
+                />
+              ) : (
+                <Checkbox
+                  onChange={handleChange}
+                  name="completed"
+                  id={todo.id}
+                  icon={<CircleUnchecked style={{ color: "#bababa" }} />}
+                  checkedIcon={
+                    <CircleCheckedFilled style={{ color: "green" }} />
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    updateTodo({
+                      variables: { id: todo.id, completed: true },
+                    });
+                  }}
+                />
+              )}
+
               {todo.title}
-              <DeleteIcon className={classes.delete} />
+              <DeleteIcon
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteTodo({ variables: { id: todo.id } });
+                }}
+                className={classes.delete}
+              />
             </Grid>
           ))}
       </Grid>

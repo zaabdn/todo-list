@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import MenuIcon from "@material-ui/icons/Menu";
 import {
   AppBar,
   Toolbar,
@@ -9,10 +8,15 @@ import {
   IconButton,
   CssBaseline,
   Grid,
+  FormGroup,
+  FormControlLabel,
+  Menu,
+  MenuItem,
 } from "@material-ui/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
+    color: "black",
   },
   Button: {
     color: "white",
@@ -48,51 +53,73 @@ const useStyles = makeStyles((theme) => ({
 export default function Header() {
   const classes = useStyles();
   const router = useRouter();
-  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem("token"));
+    setEmail(localStorage.getItem("email"));
   }, []);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   function handleLogout() {
     localStorage.clear();
     Cookies.remove("token");
-    window.location.reload(true);
+    router.push(`/signin`);
   }
 
   return (
-    <React.Fragment>
-      <Toolbar className={classes.toolbar}>
-        <Grid container spacing={1}>
-          <Grid item xs={8}>
-            <Typography variant="h5">TODO</Typography>
-          </Grid>
-          {token ? (
-            <Grid item xs={4} align="right">
-              <Button onClick={handleLogout} type="submit">
-                Logout
+    <div className={classes.root}>
+      <AppBar position="static" style={{ backgroundColor: "transparent" }}>
+        <Toolbar>
+          <Typography variant="h5" className={classes.title}>
+            <b>Todo List</b>
+          </Typography>
+          {email ? (
+            <div>
+              <Button
+                aria-controls="simple-menu"
+                aria-haspopup="true"
+                onClick={handleClick}
+              >
+                <AccountCircle />
               </Button>
-            </Grid>
+              <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </div>
           ) : (
-            <Grid item xs={4} align="right">
-              <Link href="/signin" as={`/signin`}>
+            <Grid>
+              <Link href="/signin">
                 <Button
-                  variant="contained"
-                  size="small"
-                  style={{ marginRight: "10px" }}
+                  variant="text"
+                  color="inherit"
+                  style={{ marginRight: "20px" }}
                 >
                   Login
                 </Button>
               </Link>
-              <Link href="/signup" as={`/signup`}>
-                <Button variant="contained" color="primary" size="small">
-                  Sign up
+              <Link href="/signup">
+                <Button variant="outlined" color="inherit">
+                  Register
                 </Button>
               </Link>
             </Grid>
           )}
-        </Grid>
-      </Toolbar>
-    </React.Fragment>
+        </Toolbar>
+      </AppBar>
+    </div>
   );
 }

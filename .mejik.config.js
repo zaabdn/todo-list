@@ -1,5 +1,5 @@
 export default {
   //---start-configs---
-  GRAPHQL_URL: "https://todolist1599005364106.microgen.mejik.id/graphql",
+  GRAPHQL_URL: "https://todo1593684289427.microgen.mejik.id/graphql",
   //---end-configs---
 };
