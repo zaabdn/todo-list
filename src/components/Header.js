@@ -106,15 +106,13 @@ export default function Header() {
                 <Button
                   variant="text"
                   color="inherit"
-                  style={{ marginRight: "20px" }}
+                  style={{ marginRight: "20px", color: "black" }}
                 >
                   Login
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button variant="outlined" color="inherit">
-                  Register
-                </Button>
+                <Button variant="contained">Register</Button>
               </Link>
             </Grid>
           )}

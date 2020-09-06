@@ -1,20 +1,114 @@
 import Header from "../components/Header";
-import Card from "../components/Card";
-import { Container, Typography } from "@material-ui/core";
+import { Container, Typography, Grid } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
+import InputTodo from "../components/InputTodo";
+import ListTodos from "../components/ListTodo";
+import { useQuery } from "@apollo/client";
+import {
+  GET_TODO,
+  CREATE_TODO,
+  UPDATE_TODO,
+  DELETE_TODO,
+} from "../../graphql/todo";
+import { useMutation, gql } from "@apollo/client";
 
 export default function Todo() {
+  let input;
+  const [todos, setTodo] = useState({
+    title: "",
+    completed: false,
+  });
   const [email, setEmail] = useState("");
+  const { loading, error, refetch, data } = useQuery(GET_TODO);
+
+  const handleChangeCheck = (event) => {
+    setTodo({ ...todos, [event.target.name]: event.target.checked });
+  };
+  const handleChange = (e) => {
+    setTodo({ ...todos, [e.target.name]: e.target.value });
+  };
+
+  const [createTodo] = useMutation(CREATE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    createTodo({ variables: { title: todos.title.value } });
+    todos.title.value = "";
+  };
+
+  const [updateTodo] = useMutation(UPDATE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
+
+  const handleUpdate = (id, e, completed) => {
+    e.preventDefault();
+    updateTodo({
+      variables: { id: id, completed: completed },
+    });
+  };
+
+  const [deleteTodo] = useMutation(DELETE_TODO, {
+    onCompleted: () => {
+      refetch();
+    },
+  });
+
+  const handleDelete = (id, e) => {
+    e.preventDefault();
+    deleteTodo({ variables: { id: id } });
+  };
 
   useEffect(() => {
     setEmail(localStorage.getItem("email"));
-  }, []);
+  });
   return (
     <div>
       <Header title="Todo" />
       {email ? (
         <main>
-          <Card />
+          <Container
+            maxWidth="sm"
+            style={{ marginTop: "50px", paddingBottom: "100px" }}
+          >
+            <Grid item xs={12} align="center">
+              <img
+                src="https://media-exp1.licdn.com/dms/image/C4D0BAQGrzneL3Dpmxw/company-logo_200_200/0?e=2159024400&v=beta&t=145tUYuZya2-FCl7P369j8wX6QAhnLt-gzSOuHVizvg"
+                alt="logo"
+                width="150px"
+                height="150px"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h3" align="center">
+                <b>Let's do</b>
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" align="center" color="textSecondary">
+                Coding, Eat, Sleep, Repeat
+              </Typography>
+            </Grid>
+            <InputTodo
+              todos={todos}
+              handleChange={handleChange}
+              handleSubmit={handleSubmit}
+            />
+            {!todos ? (
+              <h1>Loading...</h1>
+            ) : (
+              <ListTodos
+                data={data}
+                handleDelete={handleDelete}
+                handleChangeCheck={handleChangeCheck}
+                handleUpdate={handleUpdate}
+              />
+            )}
+          </Container>
         </main>
       ) : (
         <div style={{ marginTop: "50px" }} align="center">
