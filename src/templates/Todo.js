@@ -19,7 +19,7 @@ export default function Todo() {
     completed: false,
   });
   const [email, setEmail] = useState("");
-  const { loading, error, refetch, data } = useQuery(GET_TODO);
+  const { loading, error, refetch, data } = GET_TODO();
 
   const handleChangeCheck = (event) => {
     setTodo({ ...todos, [event.target.name]: event.target.checked });
@@ -28,7 +28,7 @@ export default function Todo() {
     setTodo({ ...todos, [e.target.name]: e.target.value });
   };
 
-  const [createTodo] = useMutation(CREATE_TODO, {
+  const [createTodo] = CREATE_TODO({
     onCompleted: () => {
       refetch();
     },
@@ -39,7 +39,7 @@ export default function Todo() {
     todos.title.value = "";
   };
 
-  const [updateTodo] = useMutation(UPDATE_TODO, {
+  const [updateTodo] = UPDATE_TODO({
     onCompleted: () => {
       refetch();
     },
@@ -52,7 +52,7 @@ export default function Todo() {
     });
   };
 
-  const [deleteTodo] = useMutation(DELETE_TODO, {
+  const [deleteTodo] = DELETE_TODO({
     onCompleted: () => {
       refetch();
     },
